@@ -1,0 +1,120 @@
+// Initialize the map
+const map = L.map('map').setView([14.05000, 100.48333], 10);
+
+// Add a tile layer
+L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
+  attribution: '© OpenStreetMap contributors'
+}).addTo(map);
+
+// Fetch GeoJSON data
+fetch("Map_Phathum.geojson")
+  .then(response => response.json())
+  .then(data => {
+    // Create a GeoJSON layer
+    const geojsonLayer = L.geoJSON(data, {
+      style: function (feature) {
+        // Customize the style based on the feature's properties
+        const value = feature.properties.value;
+        return {
+          fillColor: getColor(value),
+          weight: 2,
+          opacity: 1,
+          color: 'white',
+          dashArray: '3',
+          fillOpacity: 0.7
+        };
+      },
+      onEachFeature: function (feature, layer) {
+        // Add popup with information on click
+        layer.bindPopup('Region: ' + feature.properties.name + '<br>Value: ' + feature.properties.value);
+      }
+    }).addTo(map);
+})
+.catch(error => console.error("Error loading GeoJSON:", error));
+
+function getColor(e) {
+    return e > 20 ? 'red' :
+           e > 10 ? 'rgb(255, 157, 0)' :
+           e > 5  ? 'rgb(255, 242, 0)' :
+           e > 2  ? 'rgb(4, 255, 0)' :
+           'rgb(4, 255, 0)';
+}
+
+function style(feature) {
+    return {
+        fillColor: getColor(feature.properties.value),
+        weight: 2,
+        opacity: 1,
+        color: 'white',
+        dashArray: '3',
+        fillOpacity: 0.7
+    };
+}
+
+function highlightFeature(e) {
+    const layer = e.target;
+
+    layer.setStyle({
+        weight: 5,
+        color: '#666',
+        dashArray: '',
+        fillOpacity: 0.7
+    });
+
+    // layer.bringToFront();
+    info.update(layer.feature.properties);
+}
+
+function resetHighlight(e) {
+    // geojson.resetStyle(e.target);
+    info.update();
+}
+
+var geojson;
+geojson = L.geoJson(statesData, {
+    style: style,
+    onEachFeature: onEachFeature
+}).addTo(map);
+
+function zoomToFeature(e) {
+    map.fitBounds(e.target.getBounds());
+}
+
+function onEachFeature(feature, layer) {
+    layer.on({
+        mouseover: highlightFeature,
+        mouseout: resetHighlight,
+        click: zoomToFeature
+    });
+
+    const geojson = L.geoJson(statesData, {
+        style: style,
+        onEachFeature: onEachFeature
+    }).addTo(map);
+}
+
+map.attributionControl.addAttribution('Population data &copy; <a href="http://census.gov/">US Census Bureau</a>');
+
+const legend = L.control({position: 'bottomright'});
+
+legend.onAdd = function (map) {
+
+	const div = L.DomUtil.create('div', 'info legend');
+	const grades = [2, 5, 10, 20];
+	const labels = [];
+	let from, to;
+
+	for (let i = 0; i < grades.length; i++) {
+		from = grades[i];
+		to = grades[i + 1];
+
+		labels.push(`<i style="background:${getColor(from + 1)}"></i> ${from}${to ? `&ndash;${to}` : '+'}`);
+	}
+
+	div.innerHTML = labels.join('<br>');
+	return div;
+};
+
+legend.addTo(map);
+
+
