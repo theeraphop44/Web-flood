@@ -104,10 +104,10 @@ async function defaut_show(loca, station) {
     statuslevelwater_name.textContent = ` ${name}`;
 
     const statuslevelwater_waterlevel = document.getElementById('statuslevelwater-waterlevel');
-    statuslevelwater_waterlevel.textContent = `ระดับน้ำ : ${water_level}`;
+    statuslevelwater_waterlevel.textContent = `ระดับตลิ่ง : ${water_level}ม.`;
 
     const statuslevelwater_bank = document.getElementById('statuslevelwater-bank');
-    statuslevelwater_bank.textContent = `ระดับตลิ่ง : ${msl}`;
+    statuslevelwater_bank.textContent = `ระดับน้ำ : ${msl}ม.`;
 
     const statuslevelwater_status = document.getElementById('statuslevelwater-status');
     statuslevelwater_status.textContent = `${statusofwater}`;
