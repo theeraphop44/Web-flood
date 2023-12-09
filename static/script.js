@@ -19,7 +19,7 @@ function getColor(e) {
 async function someName() {
 
     defaut_show("ธัญบุรี", "ฟิวเจอร์ฯรังสิต")
-    const waterLevel = await fetch("https://promethazine.holfz.workers.dev/waterlevel", { method: 'GET', redirect: 'follow' });
+    const waterLevel = await fetch("/api/waterlevel", { method: 'GET', redirect: 'follow' });
     const waterLevelResp = await waterLevel.json();
 
     const response = await fetch("Map_Phathum.geojson");
@@ -84,9 +84,9 @@ function highlightFeature(e) {
 }
 
 async function defaut_show(loca, station) {
-    const rain = await fetch("https://promethazine.holfz.workers.dev/rainlevel", { method: 'GET', redirect: 'follow' });
+    const rain = await fetch("api/rainlevel", { method: 'GET', redirect: 'follow' });
     const rainResp = await rain.json();
-    const waterLevel = await fetch("https://promethazine.holfz.workers.dev/waterlevel", { method: 'GET', redirect: 'follow' });
+    const waterLevel = await fetch("api/waterlevel", { method: 'GET', redirect: 'follow' });
     const waterLevelResp = await waterLevel.json();
     const thisStation = waterLevelResp.data.find(o => (o.geocode.amphoe_name === loca));
 
