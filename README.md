@@ -1,7 +1,7 @@
 HOW TO RUN
 
 - Dependencies
-    - Node.js v20.9.0
+    - Node.js v20.9.0 (https://nodejs.org/en)
     - npm v10.2.1
 
 1. cd Web-flood
