@@ -1,58 +1,74 @@
-// Initialize the map
-const map = L.map('map').setView([14.05000, 100.48333], 10);
+// Map Initialization
+var map = L.map('map').setView([14.05000, 100.48333], 10);
 
-// Add a tile layer
-L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
-  attribution: '© OpenStreetMap contributors'
+// Tile Layer
+var tiles = L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
+    attribution: '&copy; <a href="http://www.openstreetmap.org/copyright">OpenStreetMap</a>'
 }).addTo(map);
 
-// Fetch GeoJSON data
-fetch("Map_Phathum.geojson")
-  .then(response => response.json())
-  .then(data => {
-    // Create a GeoJSON layer
-    const geojsonLayer = L.geoJSON(data, {
-      style: function (feature) {
-        // Customize the style based on the feature's properties
-        const value = feature.properties.value;
-        return {
-          fillColor: getColor(value),
-          weight: 2,
-          opacity: 1,
-          color: 'white',
-          dashArray: '3',
-          fillOpacity: 0.7
-        };
-      },
-      onEachFeature: function (feature, layer) {
-        // Add popup with information on click
-        layer.bindPopup('Region: ' + feature.properties.name + '<br>Value: ' + feature.properties.value);
-      }
-    }).addTo(map);
-})
-.catch(error => console.error("Error loading GeoJSON:", error));
+let geojson;
 
+// Color function
 function getColor(e) {
-    return e > 20 ? 'red' :
-           e > 10 ? 'rgb(255, 157, 0)' :
-           e > 5  ? 'rgb(255, 242, 0)' :
-           e > 2  ? 'rgb(4, 255, 0)' :
-           'rgb(4, 255, 0)';
+    return e > 100 ? 'red' :
+        e > 70 ? 'blue' :
+            e > 30 ? 'rgb(8, 206, 28)' :
+                'rgb(252, 236, 55)';
 }
 
+async function someName() {
+    const waterLevel = await fetch("https://promethazine.holfz.workers.dev/waterlevel", { method: 'GET', redirect: 'follow' });
+    const waterLevelResp = await waterLevel.json();
+
+    const response = await fetch("Map_Phathum.geojson");
+    const data = await response.json();
+
+    geojson = L.geoJSON(data, {
+        style: function (feature) {
+            const thisStation = waterLevelResp.data.find(o => (o.geocode.amphoe_name === feature.properties.name));
+            if (!thisStation) {
+                // console.log(feature);
+            }
+            //    console.log(thisStation);
+            return {
+                fillColor: getColor(thisStation.storage.percent), // นำค่า value ไปใช้กับ getColor() เพื่อกำหนดสี
+                weight: 2,
+                opacity: 1,
+                color: 'black',
+                dashArray: '3',
+                fillOpacity: 0.7
+            };
+
+        },
+
+        onEachFeature: function (feature, layer) {
+            layer.bindPopup('Region: ' + feature.properties.name);
+            layer.on({
+                mouseover: highlightFeature,
+                mouseout: resetHighlight,
+                click: zoomToFeature
+            })
+        }
+
+    }).addTo(map);
+}
+
+someName()
+
+// Style function
 function style(feature) {
     return {
         fillColor: getColor(feature.properties.value),
         weight: 2,
         opacity: 1,
-        color: 'white',
+        color: 'blue',
         dashArray: '3',
         fillOpacity: 0.7
     };
 }
 
 function highlightFeature(e) {
-    const layer = e.target;
+    var layer = e.target;
 
     layer.setStyle({
         weight: 5,
@@ -61,60 +77,167 @@ function highlightFeature(e) {
         fillOpacity: 0.7
     });
 
-    // layer.bringToFront();
-    info.update(layer.feature.properties);
+    layer.bringToFront();
 }
 
 function resetHighlight(e) {
-    // geojson.resetStyle(e.target);
-    info.update();
+    geojson.resetStyle(e.target);
 }
 
-var geojson;
-geojson = L.geoJson(statesData, {
-    style: style,
-    onEachFeature: onEachFeature
-}).addTo(map);
+let isZoomed = false; // เพิ่มตัวแปร isZoomed
 
-function zoomToFeature(e) {
-    map.fitBounds(e.target.getBounds());
+async function zoomToFeature(e) {
+
+    const rain = await fetch("https://promethazine.holfz.workers.dev/rainlevel", { method: 'GET', redirect: 'follow' });
+    const rainResp = await rain.json();
+    // Check if e is not null
+    if (e) {
+        var layer = e.target;
+        var properties = layer.feature.properties;
+
+        if (properties.name == "ธัญบุรี") {
+            xx = "ฟิวเจอร์ฯรังสิต"
+        } else if (properties.name == "หนองเสือ") {
+            xx = "คลองระพีพัฒน์แยกใต้ หนองเสือ"
+        } else if (properties.name == "เมืองปทุมธานี") {
+            xx = "คลองเปรมประชากร หลักหก"
+        } else if (properties.name == "คลองหลวง") {
+            xx = "คลองระพีพัฒน์แยกตก"
+        } else if (properties.name == "ลำลูกกา") {
+            xx = "คลองหกวา ลำลูกกา คลอง8"
+        }
+
+        if (isZoomed && map.getBounds().equals(layer.getBounds())) {
+            isZoomed = false;
+            return;
+        }
+
+        // ตรวจสอบว่าคลิกที่ feature อื่นหรือไม่
+        if (isZoomed) {
+            isZoomed = false;
+        }
+
+    }
+
+    console.log(xx);
+        const thisrainStation = rainResp.data.find(o => (o.station.name === xx));
+
+        for (let i = 0; i < thisrainStation.rain7d.length; i++) {
+            console.log(thisrainStation.rain7d[i].rain.situation_text);
+            const tableData = rainData.map((data, index) => ({
+                num: index + 1,
+                date: data.thisrainStation.rain7d[i].date,
+                situation: data.thisrainStation.rain7d[i].rain.situation_text,
+            }));
+        
+
+            // Clear existing table content
+            tableBody.innerHTML = '';
+
+            // Add new rows to the table
+            tableData.forEach(item => {
+                const row = document.createElement('tr');
+                row.classList.add(item.num % 2 === 0 ? 'TableRow-b' : 'TableRow-w');
+
+                Object.entries(item).forEach(([key, value]) => {
+                    if (key !== 'num') {
+                        const cell = document.createElement('td');
+                        cell.classList.add('TableCell-body');
+                        cell.textContent = value;
+                        row.appendChild(cell);
+                    }
+
+                });
+
+                tableBody.appendChild(row);
+            });
+            return { properties: layer.feature.properties, isZoomed: true, tableData };
+
+
+        }
+    // If e is not null, fit bounds to the layer
+    if (e) {
+        map.fitBounds(layer.getBounds());
+
+        // ทำเครื่องหมายว่ามีการ zoom แล้ว
+        isZoomed = true;
+    }
 }
 
-function onEachFeature(feature, layer) {
-    layer.on({
-        mouseover: highlightFeature,
-        mouseout: resetHighlight,
-        click: zoomToFeature
-    });
-
-    const geojson = L.geoJson(statesData, {
-        style: style,
-        onEachFeature: onEachFeature
-    }).addTo(map);
-}
 
 map.attributionControl.addAttribution('Population data &copy; <a href="http://census.gov/">US Census Bureau</a>');
 
-const legend = L.control({position: 'bottomright'});
+const legend = L.control({ position: 'bottomright' });
 
 legend.onAdd = function (map) {
+    const div = L.DomUtil.create('div', 'info legend');
+    const grades = [0, 30, 70, 100];
+    const labels = [];
+    let from, to;
 
-	const div = L.DomUtil.create('div', 'info legend');
-	const grades = [2, 5, 10, 20];
-	const labels = [];
-	let from, to;
+    for (let i = 0; i < grades.length; i++) {
+        from = grades[i];
+        to = grades[i + 1];
 
-	for (let i = 0; i < grades.length; i++) {
-		from = grades[i];
-		to = grades[i + 1];
+        labels.push(`<i style="background:${getColor(from + 1)}"></i> ${from}${to ? `&ndash;${to}` : '+'}`);
+    }
 
-		labels.push(`<i style="background:${getColor(from + 1)}"></i> ${from}${to ? `&ndash;${to}` : '+'}`);
-	}
-
-	div.innerHTML = labels.join('<br>');
-	return div;
+    div.innerHTML = labels.join('<br>');
+    return div;
 };
 
 legend.addTo(map);
 
 
+const data = [
+    { num: 1, Day: "", Status: "", Icon: "" },
+
+];
+
+const tableBody = document.querySelector('.TableBody');
+const tableHead = document.querySelector('.TableHead');
+
+// สร้าง <th> สำหรับแต่ละ property
+const headerRow = document.createElement('tr');
+Object.keys(data[0]).forEach(key => {
+    if (key !== 'num') {
+        const headerCell = document.createElement('th');
+        headerCell.classList.add('TableCell-head');
+        headerCell.innerHTML = `<span class="ButtonBase">${key}</span>`;
+        headerRow.appendChild(headerCell);
+    }
+});
+
+// เพิ่ม <th> ลงใน thead
+tableHead.appendChild(headerRow);
+
+// สร้าง <tr> สำหรับแต่ละรายการใน data
+data.forEach(item => {
+    const row = document.createElement('tr');
+    row.classList.add(item.num % 2 === 0 ? 'TableRow-b' : 'TableRow-w');
+
+    // สร้าง <td> สำหรับแต่ละ property โดยไม่รวม 'num'
+    Object.entries(item).forEach(([key, value]) => {
+        if (key !== 'num') {
+            const cell = document.createElement('td');
+            cell.classList.add('TableCell-body');
+            cell.textContent = value;
+            row.appendChild(cell);
+        }
+    });
+
+    // เพิ่ม <tr> ลงใน tbody
+    tableBody.appendChild(row);
+});
+
+
+const buttons = document.querySelectorAll('button');
+
+buttons.forEach(button => {
+    button.addEventListener('click', function () {
+
+        this.style.background = '#ff0000';
+
+        // อย่าลืมดำเนินการอื่นๆ ตามที่คุณต้องการ
+    });
+});

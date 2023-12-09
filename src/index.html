@@ -3,11 +3,11 @@
 
 <head>
     <meta charset="UTF-8">
-    <meta name="iewport" content="width=device-width, initial-scale=1.0">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <link rel="stylesheet" href="https://unpkg.com/leaflet/dist/leaflet.css" />
     <link rel="stylesheet" href="style.css">
     <title>Choropleth Map with Leaflet</title>
-    </head>
+</head>
 
 <body>
     <div class="main">
@@ -18,25 +18,59 @@
             <div class="right-top">
                 <div class="right-top-left">
                     <div class="status">
-                        <h1>Status </h1>
+                        <h1>สถานะ </h1>
                         <div class="card">
-                            <h2 style="background-color: rgb(4, 255, 0); ">Save</h2>
-                            <h2 style="background-color: rgb(255, 242, 0); ">Keep track of</h2>
-                            <h2 style="background-color: rgb(255, 157, 0); ">High risk</h2>
-                            <h2 style="background-color: red;">There is flooding</h2>   
+                            <h2 style="background-color: rgb(252, 236, 55); ">น้ำน้อย</h2>
+                            <h2 style="background-color: rgb(8, 206, 28); ">น้ำปกติ</h2>
+                            <h2 style="background-color: rgb(85, 85, 255); ">น้ำมาก</h2>
+                            <h2 style="background-color: red;">น้ำล้นตลิ่ง</h2>
                         </div>
                     </div>
                 </div>
                 <div class="right-top-right">
-                   
+                    <div id="statuslevelwater-name">สถานที่</div>
+                    <div class="box-show-status-up">
+                        <div id="statuslevelwater-waterlevel"></div>
+                        <div id="statuslevelwater-bank"></div>
+                    </div>
+                    <div class="box-show-status-down">
+                        <div id="statuslevelwater-status"></div>
+                        <div id="statuslevelwater-date"></div>
+                    </div>
+
                 </div>
             </div>
             <div class="sidebar">
                 <div class="sidebar_menu">
-                    <ul>
-                        <button class="btn_sidebar">level water</button>
-                        <button class="btn_sidebar">weather</button>
-                    </ul>
+                    <div class="box-topic">
+                        <div class="topic-status">สภาพอากาศ</div>
+                        <div><span id="currentRainIcon"></span></div>
+                        <div><span id="currentRainText"></span></div>
+                    </div>
+                </div>
+            </div>
+            <div class="sidebar">
+                <div class="sidebar_menu">
+                    <div class="box-topic">
+                        <div class="topic-status">ฝนสูงสุดวันนี้</div>
+                        <div id="rainCollection1d"></div>
+                    </div>
+                </div>
+            </div>
+            <div class="sidebar">
+                <div class="sidebar_menu">
+                    <div class="box-topic">
+                        <div class="topic-status">ฝนสะสม 3 วัน</div>
+                        <div id="rainCollection3d"></div>
+                    </div>
+                </div>
+            </div>
+            <div class="sidebar">
+                <div class="sidebar_menu">
+                    <div class="box-topic">
+                        <div class="topic-status">ฝนสะสม 7 วัน</div>
+                        <div id="rainCollection7d"></div>
+                    </div>
                 </div>
             </div>
             <div class="right-bottom">
@@ -44,17 +78,17 @@
                     <thead class="TableHead"></thead>
                     <tbody class="TableBody"></tbody>
                 </table>
-            </div> 
+            </div>
         </div>
-        
+
         <div>
         </div>
     </div>
 
     <script src="https://unpkg.com/leaflet/dist/leaflet.js"></script>
-    <script src="Map_Phathum.geojson"></script>
+    <!-- <script src="Map_Phathum.geojson"></script> -->
     <script src="script.js"></script>
-    <Script src="script-map.js"></Script>
+    <!-- <Script src="script-map.js"></Script>   -->
 </body>
 
 </html>
